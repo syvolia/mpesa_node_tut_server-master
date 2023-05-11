@@ -1,0 +1,13 @@
+runtime: nodejs16
+
+
+
+env_variables:
+  APP_KEY : "1d4dfa41-6113-47cc-9814-47df3c0481de"
+  APP_TOKEN : "BkKylStbkkuNyddKb7bdGggPphuS9HGY"
+  MONGO_ATLASS_URL : "mongodb+srv://beemapaysy:josephsy27@cluster0.wwcjrpz.mongodb.net/?retryWrites=true&w=majority"
+  MPESA_CONSUMER_KEY : "A4oazZ3YiyDbWywHLFxW0eJfGPKoVw7i"
+  MPESA_CONSUMER_SECRET : "36YRbv2OXll5Nkmh"
+  MPESA_PAYBILL : "8889900"
+  PORT : "4001"
+

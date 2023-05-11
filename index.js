@@ -10,7 +10,7 @@ const Transaction = require("./models/transactionModel");
 const port = process.env.PORT;
 
 app.listen(port, () => {
-  console.log(`app is running al localhost:${port}`);
+  console.log(`app is running on localhost:${port}`);
 });
 mongoose
   .connect(process.env.MONGO_ATLASS_URL)
@@ -48,43 +48,26 @@ const getAccessToken = async (req, res, next) => {
     });
 };
 
-//STEP 2 //stk push
-app.post("/stk", getAccessToken, async (req, res) => {
-  const phone = req.body.phone.substring(1); //formated to 72190........
-  const amount = req.body.amount;
-
-  const date = new Date();
-  const timestamp =
-    date.getFullYear() +
-    ("0" + (date.getMonth() + 1)).slice(-2) +
-    ("0" + date.getDate()).slice(-2) +
-    ("0" + date.getHours()).slice(-2) +
-    ("0" + date.getMinutes()).slice(-2) +
-    ("0" + date.getSeconds()).slice(-2);
+//STEP 2 //registerUrl
+app.post("/registerUrl", getAccessToken, async (req, res) => {
+  
   const shortCode = process.env.MPESA_PAYBILL;
-  const passkey = process.env.MPESA_PASSKEY;
+  
 
-  const callbackurl = process.env.CALLBACK_URL;
+  const validation = process.env.VALIDATION_URL;
+  const confirmation = process.env.CONFIRMATION_URL;
 
-  const password = new Buffer.from(shortCode + passkey + timestamp).toString(
-    "base64"
-  );
+ 
 
   await axios
     .post(
       "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
       {
-        BusinessShortCode: shortCode,
-        Password: password,
-        Timestamp: timestamp,
-        TransactionType: "CustomerPayBillOnline",
-        Amount: amount,
-        PartyA: `254${phone}`,
-        PartyB: 522522,
-        PhoneNumber: `254${phone}`,
-        CallBackURL: `${callbackurl}/${process.env.CALLBACK_ROUTE}`,
-        AccountReference: 1279306645,
-        TransactionDesc: "fortune dev",
+        ShortCode: shortCode,
+        ResponseType: "Completed",
+        ConfirmationURL: confirmation ,
+        ValidationURL: validation ,
+      
       },
       {
         headers: {
@@ -103,9 +86,10 @@ app.post("/stk", getAccessToken, async (req, res) => {
     });
 });
 
-//STEP 3 callback url
-const callback_route = process.env.CALLBACK_ROUTE;
-app.post(`/${callback_route}`, (req, res) => {
+
+//STEP 3 confirmation url
+const confirmation = process.env.CONFIRMATION_URL;
+app.post(`/confirmation`, (req, res) => {
   if (!req.body.Body.stkCallback.CallbackMetadata) {
     console.log(req.body.Body.stkCallback.ResultDesc);
     res.status(200).json("ok");
@@ -137,41 +121,36 @@ app.post(`/${callback_route}`, (req, res) => {
       console.log({ message: "transaction saved successfully", data });
     })
     .catch((err) => console.log(err.message));
-
+    var req_data = {"recipient":transaction.customer_number,"amount":transaction.amount};
+    sendAirtime(req_data);
   res.status(200).json("ok");
 });
 
-app.post("/stkpushquery", getAccessToken, async (req, res) => {
-  const CheckoutRequestID = req.body.CheckoutRequestID;
+// Step 4 Advanta Airtime Purchase
+const sendAirtime =  async (req_data) =>
+{
+  
+  const recipients = [];
+  var recipient = req_data;
+  recipients.push(recipient);
+console.log(recipient)
 
-  const date = new Date();
-  const timestamp =
-    date.getFullYear() +
-    ("0" + (date.getMonth() + 1)).slice(-2) +
-    ("0" + date.getDate()).slice(-2) +
-    ("0" + date.getHours()).slice(-2) +
-    ("0" + date.getMinutes()).slice(-2) +
-    ("0" + date.getSeconds()).slice(-2);
-  const shortCode = process.env.MPESA_PAYBILL;
-  const passkey = process.env.MPESA_PASSKEY;
+    let APP_KEY = process.env.APP_KEY;
+    let APP_TOKEN = process.env.APP_TOKEN;
 
-  const password = new Buffer.from(shortCode + passkey + timestamp).toString(
-    "base64"
-  );
 
   await axios
 
     .post(
-      "https://api.safaricom.co.ke/mpesa/stkpushquery/v1/query",
+      "https://quicksms.advantasms.com/api/v3/airtime/send",
       {
-        BusinessShortCode: shortCode,
-        Password: password,
-        Timestamp: timestamp,
-        CheckoutRequestID: CheckoutRequestID,
+        recipients: recipients
       },
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          'Content-Type' : 'application/json',
+          'App-Key': `${APP_KEY}`,
+          'App-Token':`${APP_TOKEN}`
         },
       }
     )
@@ -182,22 +161,7 @@ app.post("/stkpushquery", getAccessToken, async (req, res) => {
       console.log(err.message);
       res.status(400).json(err);
     });
-});
 
-app.get("/transactions", (req, res) => {
-  Transaction.find({})
-    .sort({ createdAt: -1 })
-    .exec(function (err, data) {
-      if (err) {
-        res.status(400).json(err.message);
-      } else {
-        res.status(201).json(data);
-        // data.forEach((transaction) => {
-        //   const firstFour = transaction.customer_number.substring(0, 4);
-        //   const lastTwo = transaction.customer_number.slice(-2);
+}
 
-        //   console.log(`${firstFour}xxxx${lastTwo}`);
-        // });
-      }
-    });
-});
+
