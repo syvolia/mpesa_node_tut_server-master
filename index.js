@@ -21,6 +21,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
+
+//Testing API
+app.get('/getIntroMessage', (req, res) => res.json({message: 'Welcome to Beempay API!'}));
+
 //STEP 1 getting access token
 
 const getAccessToken = async (req, res, next) => {
@@ -61,7 +65,7 @@ app.post("/registerUrl", getAccessToken, async (req, res) => {
 
   await axios
     .post(
-      "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest",
+      " https://api.safaricom.co.ke/mpesa/c2b/v1/registerurl",
       {
         ShortCode: shortCode,
         ResponseType: "Completed",
