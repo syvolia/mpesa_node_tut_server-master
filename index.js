@@ -37,14 +37,14 @@ const getAccessToken = async (req, res, next) => {
       "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials",
       {
         headers: {
-          authorization: `Basic ${auth}`,
+          Authorization: `Basic ${auth}`,
         },
       }
     )
     .then((res) => {
       //   resp.status(200).json(res.data);
       token = res.data.access_token;
-      // console.log(token);
+       console.log(token);
       next();
     })
     .catch((err) => {
@@ -135,8 +135,10 @@ app.post(`/confirmation`, (req, res) => {
 
 // Step 4 Advanta Airtime Purchase
 const sendAirtime =  async (req_data) =>
+
 {
-  
+  console.log("testing airtime")
+  console.log(req_data)
   const recipients = [];
   var recipient = req_data;
   recipients.push(recipient);
