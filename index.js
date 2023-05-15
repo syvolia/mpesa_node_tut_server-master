@@ -94,6 +94,9 @@ app.post("/registerUrl", getAccessToken, async (req, res) => {
 //STEP 3 confirmation url
 const confirmation = process.env.CONFIRMATION_URL;
 app.post(`/confirmation`, (req, res) => {
+  console.log("am here testing")
+  console.log(res)
+  console.log(req)
   if (!req.body.Body.stkCallback.CallbackMetadata) {
     console.log(req.body.Body.stkCallback.ResultDesc);
     res.status(200).json("ok");
